@@ -1,110 +1,137 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>2014 Ushaverse</title>
-		<script src="libs/d3.v3.min.js"></script>
-		<link rel="stylesheet" href="assets/normalize.css">
-		<link rel="stylesheet" href="assets/foundation.min.css">
+		<title>Master Metrics </title>
+		<script src="libs/d3.v3.min.js"></script>			
 		<meta charset="utf-8">
-		<meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
-		<style>
-			html,body {
-				padding-top: 20px;
-			}
-			html,body,h1,h2,h4,h6,li,a {
-				font-family: "Proxima Nova",Helvetica,Arial,sans-serif !important;
-			}
+	
+	<style>
+		html, body {
+			padding-top: 20px;
+			padding-left: 10px;
+		}
+		html, body, h1, h2 {
+			font-family: "Proxima Nova",Helvetica,Arial,sans-serif !important;
+		}
+		.axis path,
+		.axis line {
+			fill: none;
+			stroke: #000;
+			shape-rendering: crispEdges;
+		}
+		.bar {
+			fill: red;
+		}
+		.x.axis path {
+			display: none;
+		}
+		/*#container {*/
+				/*width:100%; */
+				/*height:400px; */
+				/*border:#666;*/
+		/*}*/
+	</style>
+	<body>
+			<h2>Master Metrics<h2>
+			<!-- <div id="container"></div> -->
+			<!-- <script type="javascript" src="js/script.js"></script> --> 
+	<script>
+	var margin = {top: 20, right: 20, bottom: 30, left: 40},
+	    width = 960 - margin.left - margin.right,
+	    height = 500 - margin.top - margin.bottom;
+	
+	var x = d3.scale.ordinal()
+	    .rangeRoundBands([0, width], .1);
+	
+	var y = d3.scale.linear()
+	    .rangeRound([height, 0]);
+	
+	var color = d3.scale.ordinal()
+	    .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+	
+	var xAxis = d3.svg.axis()
+	    .scale(x)
+	    .orient("bottom");
+	
+	var yAxis = d3.svg.axis()
+	    .scale(y)
+	    .orient("left")
+	    .tickFormat(d3.format(".2s"));
+	
+	var svg = d3.select("body").append("svg")
+	    .attr("width", width + margin.left + margin.right)
+	    .attr("height", height + margin.top + margin.bottom)
+	  .append("g")
+	    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+	
+	d3.csv("data/reach-data.csv", function(error, data) {
+		if(error) return console.error(error);
+		
+	  color.domain(d3.keys(data[0]).filter(function(key) { return key !== "app"; }));
+	  
+		console.log(data);
 
-		</style>
-	</head>
-		<body>
-		<!-- Header and Nav -->
-  		<div class="row">
-  		  <div class="large-3 columns">
-  		    <h1><img src='assets/ONlogotype.png' /></h1>
-  		  </div>
-  		  <div class="large-9 columns">
-  		    <ul class="inline-list right">
-  		      <li><a href="#">Ushaverse</a></li>
-  		      <li><a href="#">Timeline</a></li>
-  		      <li><a href="#">Community</a></li>
-  		      <li><a href="#">Stats</a></li>
-  		    </ul>
-  		  </div>
-  		</div>
-  	<!-- End Header and Nav -->
-  	<div class="row">    
-  		  
-  	<!-- Main Content -->
-  		<!-- Source ordered to come first in the markup (and on small devices) but to be to the right of the nav on larger screens, TY Foundation! -->
-  		  <div class="large-9 push-3 columns">    
+	  data.forEach(function(d) {
+	    var y0 = 0;
+	    d.ages = color.domain().map(function(name) { return {name: name, y0: y0, y1: y0 += +d[name]};	 });
+	    d.total = d.ages[d.ages.length - 1].y1;
+	  });
+	
+	  data.sort(function(a, b) { return b.total - a.total; });
+	
+	  x.domain(data.map(function(d) { return d.app; }));
+	  y.domain([0, d3.max(data, function(d) { return d.total; })]);
+	
+	  svg.append("g")
+	      .attr("class", "x axis")
+	      .attr("transform", "translate(0," + height + ")")
+	      .call(xAxis);
+	
+	  svg.append("g")
+	      .attr("class", "y axis")
+	      .call(yAxis)
+	    .append("text")
+	      .attr("transform", "rotate(-90)")
+	      .attr("y", 6)
+	      .attr("dy", ".71em")
+	      .style("text-anchor", "end")
+	      .text("Installs");
+	
+	  var app = svg.selectAll(".app")
+	      .data(data)
+	    .enter().append("g")
+	      .attr("class", "g")
+	      .attr("transform", function(d) { return "translate(" + x(d.app) + ",0)"; });
+	
+	  app.selectAll("rect")
+	      .data(function(d) { return d.ages; })
+	    .enter().append("rect")
+	      .attr("width", x.rangeBand())
+	      .attr("y", function(d) { return y(d.y1); })
+	      .attr("height", function(d) { return y(d.y0) - y(d.y1); })
+	      .style("fill", function(d) { return color(d.name); });
+	
+	  var legend = svg.selectAll(".legend")
+	      .data(color.domain().slice().reverse())
+	    .enter().append("g")
+	      .attr("class", "legend")
+	      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+	
+	  legend.append("rect")
+	      .attr("x", width - 18)
+	      .attr("width", 18)
+	      .attr("height", 18)
+	      .style("fill", color);
+	
+	  legend.append("text")
+	      .attr("x", width - 24)
+	      .attr("y", 9)
+	      .attr("dy", ".35em")
+	      .style("text-anchor", "end")
+	      .text(function(d) { return d; });
+	
+	});
 
-  		    <h3>Ushaverse <small>a graph of the ushahidi universe</small></h3>
-  		    
-  		    <p>Lorizzle ipsum dolizzle hizzle gangster, consectetuer bow wow wow yo. Nullizzle gizzle velizzle, aliquet volutpat, suscipit quis, gravida vizzle, stuff. Fizzle sizzle sheezy. Things erizzle.</p>
- 		
-  		    <p>Its fo rizzle at dolizzle fizzle turpis ma nizzle pimpin'. Maurizzle ass nibh for sure turpis.</p>   
-
-  		  </div>
-
-  	<!-- Button Sidebar -->
-  		<!-- Source ordered to be pulled to the left on larger screens -->
-  		  <div class="large-3 pull-9 columns">
-  		      
-  		    <ul class="side-nav">
-  		      <li><a href="#">Ushaverse</a></li>
-  		      <li><a href="#">Core Team</a></li>
-  		      <li><a href="#">Core Tech</a></li>
-  		      <li><a href="#">Community</a></li>
-  		      <li><a href="#">Stats</a></li>
-  		    </ul>
-
-  		  </div>
-  	<!-- Graph Div -->
-  		  <div class="large-9 push-3 columns">
-
-  		  	<p><img src="http://placehold.it/940x280&text=ushaverse-graphic" /></p>
-  		  	<!--TO DO: timeline here - http://america.aljazeera.com/articles/timeline-egypt-inturmoil0.html-->
-  		  	<p>Vestibulum izzle tortizzle. Pellentesque eleifend rhoncizzle gizzle. In hac habitasse bow wow wow dictumst. </p>
-
-  		  </div>
-  	<!-- Timeline Div -->
-  		  <div class="large-9 push-3 columns">
-
-  		  	<p><img src="http://placehold.it/940x280&text=timeline" /></p>
-  		  	<!--TO DO: timeline here - http://america.aljazeera.com/articles/timeline-egypt-inturmoil0.html-->
-  		  	<p>Vestibulum izzle tortizzle. Pellentesque eleifend rhoncizzle gizzle. In hac habitasse bow wow wow dictumst. </p>
-
-  		  </div>
-
-  	<!-- Community Div -->
-  		  <div class="large-9 push-3 columns">
-
-  		  	<p><img src="http://placehold.it/940x280&text=community-graph" /></p>
-  		  	<!--TO DO: timeline here - http://america.aljazeera.com/articles/timeline-egypt-inturmoil0.html-->
-  		  	<p>Vestibulum izzle tortizzle. Pellentesque eleifend rhoncizzle gizzle. In hac habitasse bow wow wow dictumst. </p>
-
-  		  </div>
-  		  
-
-  		  
-  		
-  	<!-- Footer -->	
-  		<footer class="row">
-  		  <div class="large-12 columns">
-  		    <hr />
-  		    <div class="row">
-  		      <div class="large-6 columns">
-  		        <p>© Creative Commons. YOLO.</p>
-  		      </div>
-  		      <div class="large-6 columns">
-  		        <ul class="inline-list right">
-  		          <li><a href="#">puddingmaster</a></li>
-  		        </ul>
-  		      </div>
-  		    </div>
-  		  </div> 
-  		</footer>
-
-		</body>
+		</script>
+	</body>
 </html>
