@@ -8,6 +8,8 @@
 	
 	var y = d3.scale.linear()
 	    .rangeRound([height, 0]);
+
+	var valueLabel = "Downloads";
 	
 	var color = d3.scale.ordinal()
 	    .range(["#257900", "#848000", "#8f2200", "#9a004b", "#8100a5", "#007ebb"]);
@@ -69,7 +71,7 @@
 	      .attr("y", 6)
 	      .attr("dy", ".71em")
 	      .style("text-anchor", "end")
-	      .text("Instances");
+	      .text(valueLabel);
 	
 	  var month = svg.selectAll(".month")
 	      .data(data)
@@ -86,7 +88,7 @@
 	      .style("fill", function(d) { return color(d.name); })
 	      .on("mouseover", function(d, i) {
 	      	// console.log(d);
-	      	tooltip.html('<span id="keyword">' + d.name + '<br>' + d.val + ' downloads</span>');
+	      	tooltip.html('<span id="keyword">' + d.name + '<br>' + d.val + ' ' +valueLabel.toLowerCase()+'</span>');
 	      	// tooltip.style("display", "block"); 
 	      	tooltip.style("opacity", 1); 
 	      })
