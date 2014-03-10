@@ -21,15 +21,25 @@
 	    .orient("left")
 	    .tickFormat(d3.format(".2s"));
 	
-	var svg = d3.select("body").append("svg")
+	var chart = d3.select("body").append("div").attr("class", "bar-chart")
+
+	var svg = chart.append("svg")
 	    .attr("width", width + margin.left + margin.right)
 	    .attr("height", height + margin.top + margin.bottom)
+			.on("mousemove", function(d) {
+				var xy = d3.mouse(this)
+				tooltip.style("left", xy[0] + 10 + "px");
+				tooltip.style("top", xy[1] + 10 + "px");
+			})
 	  .append("g")
-	    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+	    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
 	
+	var tooltip = chart.append("div")
+		.attr("class", "tooltip")
+
 	d3.csv("data/reach-data.csv", function(error, data) {
 		if(error) return console.error(error);
-		
+
 		// ignore last row in csv (total)
 		data = data.slice(0,-1)
 
@@ -39,7 +49,7 @@
 
 	  data.forEach(function(d) {
 	    var y0 = 0;
-	    d.apps = color.domain().map(function(name) { return {name: name, y0: y0, y1: y0 += +d[name]};	 });
+	    d.apps = color.domain().map(function(name) { return {name: name, val: d[name], y0: y0, y1: y0 += +d[name]};	 });
 	    d.total = d.apps[d.apps.length - 1].y1;
 	  });
 		
@@ -71,10 +81,27 @@
 	      .data(function(d) { return d.apps; })
 	    .enter().append("rect")
 	      .attr("width", x.rangeBand())
+	      .attr("y", height)
+	      .attr("height", 0)
+	      .style("fill", function(d) { return color(d.name); })
+	      .on("mouseover", function(d, i) {
+	      	// console.log(d);
+	      	tooltip.html('<span id="keyword">' + d.name + '<br>' + d.val + ' downloads</span>');
+	      	// tooltip.style("display", "block"); 
+	      	tooltip.style("opacity", 1); 
+	      })
+	      .on("mouseout", function() { 
+	      	// tooltip.style("display", "none"); 
+	      	tooltip.style("opacity", 0); 
+	      })
+	      .transition()
+	      .duration(400)
 	      .attr("y", function(d) { return y(d.y1); })
 	      .attr("height", function(d) { return y(d.y0) - y(d.y1); })
-	      .style("fill", function(d) { return color(d.name); });
-	
+
+/* 
+ * LEGEND DRAW
+ */	
 	  var legend = svg.selectAll(".legend")
 	      .data(color.domain().slice().reverse())
 	    .enter().append("g")
@@ -93,9 +120,15 @@
 	      .attr("dy", ".35em")
 	      .style("text-anchor", "end")
 	      .text(function(d) { return d; });
-	
-	});
 
 
+ 	});
+
+// TO DO
+//- fix tooltips (reset to d. and hover at actual rect)
+//- fix axes (not plotting from d)
+//- fix ticks to be on all months
+//- bottons to redraw between years
+//- transition between stacked to grouped
 
 // })();
