@@ -50,6 +50,7 @@
 		console.log(data);
 
 	  data.forEach(function(d) {
+	  	console.log('item ',d);
 	    var y0 = 0;
 	    d.apps = color.domain().map(function(name) { return {name: name, val: d[name], y0: y0, y1: y0 += +d[name]};	});
 	    d.total = d.apps[d.apps.length - 1].y1;
@@ -127,10 +128,7 @@
  	});
 
 // TO DO
-//- fix tooltips (reset to d. and hover at actual rect)
-//- fix axes (not plotting from d)
-//- fix ticks to be on all months
-//- bottons to redraw between years
+//- buttons to redraw between years
 //- transition between stacked to grouped
 
 // })();
