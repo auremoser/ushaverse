@@ -4,7 +4,7 @@
 	    height = 500 - margin.top - margin.bottom;
 	
 	var x = d3.scale.ordinal()
-	    .rangeRoundBands([0, width], .1);
+	    .rangeRoundBands([0, width], .3);
 	
 	var y = d3.scale.linear()
 	    .rangeRound([height, 0]);
@@ -30,6 +30,9 @@
 	d3.csv("data/reach-data.csv", function(error, data) {
 		if(error) return console.error(error);
 		
+		// ignore last row in csv (total)
+		data = data.slice(0,-1)
+
 	  color.domain(d3.keys(data[0]).filter(function(key) { return key !== "month"; }));
 	  
 		console.log(data);
@@ -39,9 +42,7 @@
 	    d.apps = color.domain().map(function(name) { return {name: name, y0: y0, y1: y0 += +d[name]};	 });
 	    d.total = d.apps[d.apps.length - 1].y1;
 	  });
-	
-	  data.sort(function(a, b) { return b.total - a.total; });
-	
+		
 	  x.domain(data.map(function(d) { return d.month; }));
 	  y.domain([0, d3.max(data, function(d) { return d.total; })]);
 	
