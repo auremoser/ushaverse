@@ -8,3 +8,7 @@ ushaverse initial project - responsive test
 
 - main.html: responsive container test
 - index.html: metrics chart | [demo](http://ushahidi-auremoser.dotcloud.com/#)
+data:
+![Data-Example](https://raw.githubusercontent.com/auremoser/images/master/ush-reach-data.png)
+demo img:
+![Demo-Example](https://raw.githubusercontent.com/auremoser/images/master/ush-stacked-bar.png)
